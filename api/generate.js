@@ -1,3 +1,43 @@
+import admin from 'firebase-admin';
+
+// Falls noch nicht geschehen: Firebase Admin SDK initialisieren
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      // Hier deine Firebase-Service-Account-Daten einfügen oder Umgebungsvariablen nutzen
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    }),
+  });
+}
+
+export default async function handler(req, res) {
+  // Token aus Header holen
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized: Kein Token gefunden' });
+  }
+
+  try {
+    // Token prüfen
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    // Hier kannst du decodedToken.uid oder andere Infos nutzen
+
+    // Wenn geprüft, dann mache dein API-Handling weiter:
+    // ... hier deine Logik, z.B. OpenAI Anfrage
+
+  } catch (error) {
+    return res.status(401).json({ error: 'Unauthorized: Token ungültig' });
+  }
+}
+
+
+
+
+
 const prompts = {
   linkedin: `
     You are Kamrul Islam Maruf, a professional UI/UX designer and founder of Trexa Lab, specializing in conversion-optimized web design for small and medium businesses.

@@ -50,9 +50,28 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
+ <button id="logoutBtn">Logout</button>
+
+
+  <script type="module">
+  import { app } from './firebase-config.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+
+  const auth = getAuth(app);
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      // Kein eingeloggter Nutzer → Weiterleitung zum Login
+      window.location.href = 'login.html';
+    }
+  });
+</script>
+
+
+  <script type="module" src="script.js"></script>
+
 </body>
-</html>
+
+ </html>
 
 
 

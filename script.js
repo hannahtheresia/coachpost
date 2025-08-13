@@ -1,3 +1,30 @@
+import { app } from './firebase-config.js';
+import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+
+const auth = getAuth(app);
+
+async function getIdToken() {
+  const user = auth.currentUser;
+  if (user) {
+    return await user.getIdToken(true);
+  } else {
+    throw new Error('User ist nicht eingeloggt');
+  }
+}
+
+
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  } catch (error) {
+    alert('Fehler beim Logout: ' + error.message);
+  }
+});
+
+
+
 const form = document.getElementById('postForm');
 const outputSection = document.getElementById('outputSection');
 const outputPre = document.getElementById('output');
@@ -23,23 +50,29 @@ form.addEventListener('submit', async (e) => {
   }
 
   try {
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platform, topic: topic || null, goal }),
-    });
+  const token = await getIdToken(); // Hole den Firebase User Token
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || 'API error');
-    }
+  const res = await fetch('/api/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,  // Token im Authorization-Header mitschicken
+    },
+    body: JSON.stringify({ platform, topic: topic || null, goal }),
+  });
 
-    const data = await res.json();
-    outputPre.textContent = data.output;
-    outputSection.hidden = false;
-  } catch (err) {
-    errorMsg.textContent = err.message;
-    errorSection.hidden = false;
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'API error');
   }
+
+  const data = await res.json();
+  outputPre.textContent = data.output;
+  outputSection.hidden = false;
+} catch (err) {
+  errorMsg.textContent = err.message;
+  errorSection.hidden = false;
+}
+
 });
 

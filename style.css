@@ -14,7 +14,10 @@ body {
   justify-content: center;
   align-items: center;
   padding: 40px 20px;
+  flex-direction: column;
 }
+
+
 
 main {
   background: #fff;
@@ -141,4 +144,29 @@ button:hover {
   }
 }
 
+#logoutBtn {
+  display: block;        /* Damit er eine eigene Zeile bekommt */
+  margin-top: 80px;      /* Abstand nach oben */
+  padding: 10px 20px;    /* etwas größer und klickfreundlicher */
+  background-color: #764ba2;  /* schöner Farbverlauf oder Farbe passend zum Design */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+ 
+
+width: 80%;
+  padding: 16px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.35s ease, box-shadow 0.35s ease;
+  box-shadow: 0 4px 12px rgba(102,126,234,0.45);
+
+}
 
