@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coach App – Landing Page</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* --- Basic Reset & Fonts --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    html, body { height: 100%; width: 100%; scroll-behavior: smooth; }
+
+    /* --- Hero Section --- */
+    .hero {
+      width: 100vw;           /* Volle Breite */
+      min-height: 100vh;      /* Volle Höhe */
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* Vertikal zentrieren */
+      align-items: center;     /* Horizontal zentrieren */
+      text-align: center;
+      background: linear-gradient(135deg, #7b2ff7, #fbb034, #32e0c4);
+      color: white;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 4rem); /* Dynamische Skalierung */
+      margin-bottom: 1rem;
+      animation: fadeInUp 1s ease forwards;
+      z-index: 1;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      margin-bottom: 2rem;
+      animation: fadeInUp 1.5s ease forwards;
+      z-index: 1;
+    }
+
+    /* --- Buttons --- */
+    .buttons {
+      display: flex;
+      gap: 1.5rem;
+      animation: fadeInUp 2s ease forwards;
+      z-index: 1;
+      flex-wrap: wrap;       /* Bei kleineren Bildschirmen umbrechen */
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: bold;
+      color: white;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      min-width: 150px;
+      text-align: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-5px);
+      background: rgba(0,0,0,0.4);
+    }
+
+    /* --- Free vs Premium Hint --- */
+    .hint {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.9);
+      animation: fadeInUp 2.5s ease forwards;
+      z-index: 1;
+    }
+
+    /* --- Parallax background effect --- */
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: -75%;
+      left: -75%;
+      width: 250%;
+      height: 250%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.1), transparent 70%);
+      transform: rotate(45deg);
+      animation: moveBg 20s linear infinite;
+      z-index: 0;
+    }
+
+    /* --- Animations --- */
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes moveBg {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 1024px) {
+      .hero h1 { font-size: 3rem; }
+      .hero p { font-size: 1.2rem; }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { font-size: 1rem; }
+      .buttons { flex-direction: column; gap: 1rem; }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 0.9rem; }
+      .btn { padding: 0.8rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1>Coach App</h1>
+    <p>Welcome! Sign up or login to get started.</p>
+    <div class="buttons">
+      <a href="signup.html" class="btn">Sign Up</a>
+      <a href="login.html" class="btn">Login</a>
+    </div>
+    <div class="hint">Use for free or upgrade for full features.</div>
+  </section>
+
+  <script type="module">
+    // Firebase Auth Redirect: auto-redirect if user is already logged in
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+    import { app } from './firebase-config.js';
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = 'index.html'; // redirect logged-in users
+      }
+    });
+  </script>
+
+</body>
+</html>
+
