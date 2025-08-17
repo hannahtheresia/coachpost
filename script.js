@@ -7,61 +7,41 @@ const db = getFirestore(app);
 
 // ---------- Auth State & Free/Basic Logic ----------
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    try {
-      const docRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const accountType = docSnap.data().accountType;
-
-        if (accountType === "free") {
-          console.log("Free user: Restricted goals, image generation disabled");
-
-          const generateBtn = document.getElementById('generateImageBtn');
-          if (generateBtn) generateBtn.disabled = true;
-
-          const goalSelect = document.getElementById('goal');
-          if (goalSelect) {
-            Array.from(goalSelect.options).forEach(opt => {
-              if (opt.value !== "Personal Brand" && opt.value !== "Fitness") {
-                opt.disabled = true;
-              }
-            });
-          }
-        } else if (accountType === "basic") {
-          console.log("Basic user: Full access to all goals and image generation");
-
-          const generateBtn = document.getElementById('generateImageBtn');
-          if (generateBtn) generateBtn.disabled = false;
-
-          const goalSelect = document.getElementById('goal');
-          if (goalSelect) {
-            Array.from(goalSelect.options).forEach(opt => opt.disabled = false);
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching user data:", err);
-    }
-  } else {
-    // Nicht eingeloggt → Landing Page
+  if (!user) {
+    // User ist nicht eingeloggt → direkt auf Landing Page
     window.location.href = 'landing.html';
+    return;
+  }
+
+  // Alles andere (eingeloggter User) bleibt gleich
+  currentUser = user;
+  try {
+    const docRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      currentAccountType = docSnap.data().accountType;
+
+      if (currentAccountType === "free") {
+        console.log("Free user: Max 20 posts/month, only 1–2 goals available, no image generation");
+        const generateBtn = document.getElementById('generateImageBtn');
+        if (generateBtn) generateBtn.disabled = true;
+
+        const goalSelect = document.getElementById('goal');
+        if (goalSelect) {
+          Array.from(goalSelect.options).forEach(opt => {
+            if (opt.value !== "Personal Brand" && opt.value !== "Fitness") {
+              opt.disabled = true;
+            }
+          });
+        }
+      } else if (currentAccountType === "basic") {
+        console.log("Basic user: Unlimited posts, access to all goals, image generation enabled");
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching user data:", err);
   }
 });
-
-// ---------- Logout ----------
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', async () => {
-    try {
-      await signOut(auth);
-      window.location.href = 'login.html';
-    } catch (error) {
-      alert('Fehler beim Logout: ' + error.message);
-    }
-  });
-}
 
 // ---------- Post Form ----------
 const form = document.getElementById('postForm');
