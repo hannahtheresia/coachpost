@@ -5,28 +5,31 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+let currentUser = null;
+let currentAccountType = "free";
+
 // ---------- Auth State & Free/Basic Logic ----------
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // User ist nicht eingeloggt → direkt auf Landing Page
     window.location.href = 'landing.html';
     return;
   }
 
-  // Alles andere (eingeloggter User) bleibt gleich
   currentUser = user;
   try {
     const docRef = doc(db, "users", user.uid);
     const docSnap = await getDoc(docRef);
+
     if (docSnap.exists()) {
       currentAccountType = docSnap.data().accountType;
 
+      const generateBtn = document.getElementById('generateImageBtn');
+      const goalSelect = document.getElementById('goal');
+
       if (currentAccountType === "free") {
-        console.log("Free user: Max 20 posts/month, only 1–2 goals available, no image generation");
-        const generateBtn = document.getElementById('generateImageBtn');
+        console.log("Free user: limited goals, no image generation");
         if (generateBtn) generateBtn.disabled = true;
 
-        const goalSelect = document.getElementById('goal');
         if (goalSelect) {
           Array.from(goalSelect.options).forEach(opt => {
             if (opt.value !== "Personal Brand" && opt.value !== "Fitness") {
@@ -34,8 +37,9 @@ onAuthStateChanged(auth, async (user) => {
             }
           });
         }
-      } else if (currentAccountType === "basic") {
-        console.log("Basic user: Unlimited posts, access to all goals, image generation enabled");
+      } else if (currentAccountType === "basic" || currentAccountType === "premium") {
+        console.log(currentAccountType + " user: full access, image generation enabled");
+        if (generateBtn) generateBtn.disabled = false;
       }
     }
   } catch (err) {
@@ -50,6 +54,9 @@ const outputPre = document.getElementById('output');
 const errorSection = document.getElementById('errorSection');
 const errorMsg = document.getElementById('error');
 
+const generateBtn = document.getElementById('generateImageBtn');
+const generatedImg = document.getElementById('generatedImage');
+
 async function getIdToken() {
   const user = auth.currentUser;
   if (user) {
@@ -59,6 +66,43 @@ async function getIdToken() {
   }
 }
 
+// ---------- Image Generator Button ----------
+if (generateBtn) {
+  generateBtn.addEventListener('click', async () => {
+    if (!currentUser) return alert('Please log in to generate images');
+
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) return alert('Please enter a topic for the image');
+
+    try {
+      generateBtn.disabled = true;
+      generateBtn.textContent = "Generating...";
+
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: topic })
+      });
+
+      const data = await res.json();
+
+      if (data.imageUrl) {
+        generatedImg.src = data.imageUrl;
+        generatedImg.style.display = 'block';
+      } else {
+        alert('Image generation failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error generating image');
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.textContent = "Generate Image";
+    }
+  });
+}
+
+// ---------- Post Form Submission ----------
 if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

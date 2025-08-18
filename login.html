@@ -2,18 +2,58 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Parallax Hintergrund */
+      body {
+    background: linear-gradient(135deg, #5b21b6, #d97706, #15803d); 
+    /* Dunklere Töne: Violett (#5b21b6), Bernstein (#d97706), Smaragd (#15803d) */
+    background-size: 200% 200%; /* weniger "gestreckt" als zuvor */
+    animation: gradientMove 20s ease infinite; /* langsamer, ruhiger */
+  }
+
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  </style>
 </head>
-<body>
-  <h1>Login</h1>
-  <form id="loginForm">
-    <label for="email">E-Mail:</label><br />
-    <input type="email" id="email" required /><br />
-    <label for="password">Passwort:</label><br />
-    <input type="password" id="password" required /><br />
-    <button type="submit">Einloggen</button>
-  </form>
+<body class="h-screen flex items-center justify-center">
+
+  <!-- Glassmorphism Card -->
+  <div class="backdrop-blur-xl bg-white/10 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+    <h1 class="text-3xl font-bold text-center mb-6 text-white">Login</h1>
+
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label for="email" class="block text-sm font-medium text-white">E-Mail</label>
+        <input type="email" id="email" required
+          class="mt-1 w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-white">Passwort</label>
+        <input type="password" id="password" required
+          class="mt-1 w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-green-400" />
+      </div>
+
+      <button type="submit"
+        class="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition duration-300">
+        Einloggen
+      </button>
+    </form>
+
+    <p class="text-center text-gray-200 mt-4">
+      Noch kein Account?
+      <a href="signup.html" class="text-yellow-300 font-semibold hover:underline">Jetzt registrieren</a>
+    </p>
+  </div>
 
   <script type="module" src="login.js"></script>
 </body>
 </html>
+
+
