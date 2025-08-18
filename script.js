@@ -1,4 +1,4 @@
-import { app } from './firebase-config.js';
+import { app } from './firebase-config.js'; 
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
@@ -7,6 +7,7 @@ const db = getFirestore(app);
 
 let currentUser = null;
 let currentAccountType = "free";
+let canGenerateImage = false; // globales Flag
 
 // ---------- Auth State & Free/Basic Logic ----------
 onAuthStateChanged(auth, async (user) => {
@@ -22,6 +23,8 @@ onAuthStateChanged(auth, async (user) => {
 
     if (docSnap.exists()) {
       currentAccountType = docSnap.data().accountType;
+      canGenerateImage = (currentAccountType === "basic" || currentAccountType === "premium");
+      console.log("Can generate image:", canGenerateImage);
 
       const generateBtn = document.getElementById('generateImageBtn');
       const goalSelect = document.getElementById('goal');
@@ -37,7 +40,7 @@ onAuthStateChanged(auth, async (user) => {
             }
           });
         }
-      } else if (currentAccountType === "basic" || currentAccountType === "premium") {
+      } else {
         console.log(currentAccountType + " user: full access, image generation enabled");
         if (generateBtn) generateBtn.disabled = false;
       }
@@ -70,6 +73,7 @@ async function getIdToken() {
 if (generateBtn) {
   generateBtn.addEventListener('click', async () => {
     if (!currentUser) return alert('Please log in to generate images');
+    if (!canGenerateImage) return alert('Upgrade to Basic/Premium to generate images');
 
     const topic = document.getElementById('topic').value.trim();
     if (!topic) return alert('Please enter a topic for the image');
@@ -85,7 +89,6 @@ if (generateBtn) {
       });
 
       const data = await res.json();
-
       if (data.imageUrl) {
         generatedImg.src = data.imageUrl;
         generatedImg.style.display = 'block';
@@ -140,9 +143,29 @@ if (form) {
       const data = await res.json();
       outputPre.textContent = data.output;
       outputSection.hidden = false;
+
+      // ---------- Auto-Generate Image ----------
+      if (canGenerateImage && topic) {
+        try {
+          const resImg = await fetch('/api/generate-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: topic })
+          });
+          const dataImg = await resImg.json();
+          if (dataImg.imageUrl) {
+            generatedImg.src = dataImg.imageUrl;
+            generatedImg.style.display = 'block';
+          }
+        } catch(err) {
+          console.error("Image generation failed:", err);
+        }
+      }
+
     } catch (err) {
       errorMsg.textContent = err.message;
       errorSection.hidden = false;
     }
   });
 }
+
