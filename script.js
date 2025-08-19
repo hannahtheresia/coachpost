@@ -6,7 +6,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUser = null;
-let currentAccountType = "free";
+let currentAccountType = "premium";
 let canGenerateImage = false; // globales Flag
 
 // ---------- Auth State & Free/Basic Logic ----------
