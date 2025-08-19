@@ -7,9 +7,8 @@ const db = getFirestore(app);
 
 let currentUser = null;
 let currentAccountType = "free";
-let canGenerateImage = false; // globales Flag
 
-// ---------- Auth State & Free/Basic Logic ----------
+// ---------- Auth State ----------
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = 'landing.html';
@@ -23,16 +22,12 @@ onAuthStateChanged(auth, async (user) => {
 
     if (docSnap.exists()) {
       currentAccountType = docSnap.data().accountType;
-      canGenerateImage = (currentAccountType === "basic" || currentAccountType === "premium");
-      console.log("Can generate image:", canGenerateImage);
+      console.log("Account type:", currentAccountType);
 
-      const generateBtn = document.getElementById('generateImageBtn');
       const goalSelect = document.getElementById('goal');
 
       if (currentAccountType === "free") {
-        console.log("Free user: limited goals, no image generation");
-        if (generateBtn) generateBtn.disabled = true;
-
+        console.log("Free user: limited goals");
         if (goalSelect) {
           Array.from(goalSelect.options).forEach(opt => {
             if (opt.value !== "Personal Brand" && opt.value !== "Fitness") {
@@ -41,8 +36,7 @@ onAuthStateChanged(auth, async (user) => {
           });
         }
       } else {
-        console.log(currentAccountType + " user: full access, image generation enabled");
-        if (generateBtn) generateBtn.disabled = false;
+        console.log(currentAccountType + " user: full access");
       }
     }
   } catch (err) {
@@ -57,9 +51,6 @@ const outputPre = document.getElementById('output');
 const errorSection = document.getElementById('errorSection');
 const errorMsg = document.getElementById('error');
 
-const generateBtn = document.getElementById('generateImageBtn');
-const generatedImg = document.getElementById('generatedImage');
-
 async function getIdToken() {
   const user = auth.currentUser;
   if (user) {
@@ -69,43 +60,7 @@ async function getIdToken() {
   }
 }
 
-// ---------- Image Generator Button ----------
-if (generateBtn) {
-  generateBtn.addEventListener('click', async () => {
-    if (!currentUser) return alert('Please log in to generate images');
-    if (!canGenerateImage) return alert('Upgrade to Basic/Premium to generate images');
-
-    const topic = document.getElementById('topic').value.trim();
-    if (!topic) return alert('Please enter a topic for the image');
-
-    try {
-      generateBtn.disabled = true;
-      generateBtn.textContent = "Generating...";
-
-      const res = await fetch('/api/generate-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: topic })
-      });
-
-      const data = await res.json();
-      if (data.imageUrl) {
-        generatedImg.src = data.imageUrl;
-        generatedImg.style.display = 'block';
-      } else {
-        alert('Image generation failed');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error generating image');
-    } finally {
-      generateBtn.disabled = false;
-      generateBtn.textContent = "Generate Image";
-    }
-  });
-}
-
-// ---------- Post Form Submission ----------
+// ---------- Form Submission ----------
 if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -144,24 +99,6 @@ if (form) {
       outputPre.textContent = data.output;
       outputSection.hidden = false;
 
-      // ---------- Auto-Generate Image ----------
-      if (canGenerateImage && topic) {
-        try {
-          const resImg = await fetch('/api/generate-image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: topic })
-          });
-          const dataImg = await resImg.json();
-          if (dataImg.imageUrl) {
-            generatedImg.src = dataImg.imageUrl;
-            generatedImg.style.display = 'block';
-          }
-        } catch(err) {
-          console.error("Image generation failed:", err);
-        }
-      }
-
     } catch (err) {
       errorMsg.textContent = err.message;
       errorSection.hidden = false;
@@ -169,7 +106,7 @@ if (form) {
   });
 }
 
-// ---------- Logout Button ----------
+// ---------- Logout ----------
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
   logoutBtn.addEventListener('click', async () => {
@@ -177,7 +114,7 @@ if (logoutBtn) {
       await signOut(auth);
       window.location.href = 'landing.html';
     } catch (err) {
-      console.error("Error logging out:", err);
+      console.error("Logout error:", err);
     }
   });
 }
