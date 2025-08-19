@@ -6,8 +6,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUser = null;
-let currentAccountType = "premium";
-let canGenerateImage = true; // globales Flag
+let currentAccountType = "free";
+let canGenerateImage = false; // globales Flag
 
 // ---------- Auth State & Free/Basic Logic ----------
 onAuthStateChanged(auth, async (user) => {
@@ -169,3 +169,15 @@ if (form) {
   });
 }
 
+// ---------- Logout Button ----------
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      window.location.href = 'landing.html';
+    } catch (err) {
+      console.error("Error logging out:", err);
+    }
+  });
+}
